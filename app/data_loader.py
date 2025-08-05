@@ -34,18 +34,22 @@ def load_data(query: Dict = None) -> Dict:
         "results": results
     }
 
-def save_data(entries, updated_at: str = None, batch_size: int = 500):
+def save_data(entries, updated_at: str = None, batch_size: int = 500, reset: bool = False):
     """
-    Save Kendra entries into MongoDB in batches to avoid memory spikes.
+    Save Kendra entries into MongoDB.
+    - If reset=True: clear old data and overwrite metadata timestamp.
+    - If reset=False: append new entries, keep old data and timestamp.
     Accepts either a list or a generator.
     """
-    if updated_at is None:
-        updated_at = datetime.now().isoformat()
-
-    collection.delete_many({})
+    if reset:
+        collection.delete_many({})
+        if updated_at is None:
+            updated_at = datetime.now().isoformat()
+    else:
+        updated_at = None
 
     batch = []
-    for entry in entries:  
+    for entry in entries:
         batch.append(sanitize_keys(entry))
         if len(batch) >= batch_size:
             collection.insert_many(batch)
@@ -54,8 +58,9 @@ def save_data(entries, updated_at: str = None, batch_size: int = 500):
     if batch:
         collection.insert_many(batch)
 
-    meta.update_one(
-        {"_id": "kendra_update"},
-        {"$set": {"updated_at": updated_at}},
-        upsert=True
-    )
+    if reset:
+        meta.update_one(
+            {"_id": "kendra_update"},
+            {"$set": {"updated_at": updated_at}},
+            upsert=True
+        )
