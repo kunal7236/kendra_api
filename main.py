@@ -22,7 +22,10 @@ app.add_middleware(
 
 @app.get("/location")
 def get_by_location(state: str, district: str):
-    data = load_data({"State Name": state, "District Name": district})
+    data = load_data({
+        "State Name": {"$regex": f"^{state}$", "$options": "i"},
+        "District Name": {"$regex": f"^{district}$", "$options": "i"}
+    })
     return JSONResponse(content=data)
 
 @app.get("/pincode/{pincode}")
@@ -32,7 +35,7 @@ def get_by_pincode(pincode: str):
 
 @app.get("/kendra/{kendra_code}")
 def get_by_kendra_code(kendra_code: str):
-    data = load_data({"Kendra Code": kendra_code})
+    data = load_data({"Kendra Code": {"$regex": f"^{kendra_code}$", "$options": "i"}})
     return JSONResponse(content=data)
 
 @app.get("/status")
