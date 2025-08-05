@@ -2,9 +2,9 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.responses import JSONResponse
 from app.data_loader import load_data, save_data
 from app.parser import parse_pdf
-import os
+from datetime import datetime
 from dotenv import load_dotenv
-from io import BytesIO
+import os
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -43,14 +43,21 @@ def get_status():
 @app.post("/upload")
 async def upload(file: UploadFile = File(...), x_api_key: str = Header(...)):
     if x_api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API Key")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    contents = await file.read()
+    temp_pdf_path = f"/tmp/{datetime.now().timestamp()}_{file.filename}"
+
+    with open(temp_pdf_path, "wb") as f:
+        f.write(contents)
 
     try:
-        contents = await file.read()
-        file_like = BytesIO(contents)
-        entries = parse_pdf(file_like)
-
+        entries = parse_pdf(temp_pdf_path)
         save_data(entries)
-        return {"message": "Data updated successfully", "entries": len(entries)}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to process PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
+
+    return {"message": "Data updated successfully", "entries": len(entries)}

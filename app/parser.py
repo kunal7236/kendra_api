@@ -1,7 +1,7 @@
 import pdfplumber
 from typing import List, Dict
 
-def parse_pdf(pdf_path) -> List[Dict]:
+def parse_pdf(pdf_path: str) -> List[Dict]:
     """
     Parse Jan Aushadhi Kendra PDF into structured records.
     Expected columns:
@@ -13,21 +13,30 @@ def parse_pdf(pdf_path) -> List[Dict]:
             table = page.extract_table()
             if not table:
                 continue
+
             for row in table:
-                if not row or not row[0] or not row[0].strip().isdigit():
+                # Skip empty rows
+                if not row or not row[0]:
                     continue
+
+                # First column must be a number (Sr.No)
+                if not row[0].strip().isdigit():
+                    continue
+
                 # Ensure row has at least 8 columns
                 while len(row) < 8:
                     row.append("")
+
                 entry = {
                     "Sr.No": row[0].strip(),
-                    "Kendra Code": row[1].strip(),
-                    "Name": row[2].strip(),
-                    "Contact": row[3].strip(),
-                    "State Name": row[4].strip(),
-                    "District Name": row[5].strip(),
-                    "Pin Code": row[6].strip(),
-                    "Address": row[7].strip()
+                    "Kendra Code": row[1].strip() if row[1] else "",
+                    "Name": row[2].strip() if row[2] else "",
+                    "Contact": row[3].strip() if row[3] else "",
+                    "State Name": row[4].strip() if row[4] else "",
+                    "District Name": row[5].strip() if row[5] else "",
+                    "Pin Code": row[6].strip() if row[6] else "",
+                    "Address": row[7].strip() if row[7] else ""
                 }
                 data.append(entry)
+
     return data
