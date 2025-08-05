@@ -40,9 +40,10 @@ def status():
     return get_status()
 
 @app.post("/upload")
-async def upload(file: UploadFile = File(...), authorization: Optional[str] = Header(None)):
-    if authorization != f"Bearer {API_KEY}":
+async def upload(file: UploadFile = File(...), x_api_key: str = Header(...)):
+    if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
+
     try:
         contents = await file.read()
         entries, updated_at = parse_pdf(contents)
