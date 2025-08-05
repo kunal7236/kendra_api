@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.responses import JSONResponse
-from app.data_loader import load_data, save_data
+from app.data_loader import load_data, save_data, client
 from app.parser import parse_pdf
 from datetime import datetime
 from dotenv import load_dotenv
@@ -60,3 +60,6 @@ async def upload(file: UploadFile = File(...), x_api_key: str = Header(...)):
 
     return {"message": "Data updated successfully"}
 
+@app.on_event("shutdown")
+def shutdown_db_client():
+    client.close() 

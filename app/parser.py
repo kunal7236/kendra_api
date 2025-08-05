@@ -4,26 +4,22 @@ from typing import Dict, Iterator
 def parse_pdf(pdf_path: str) -> Iterator[Dict]:
     """
     Parse Jan Aushadhi Kendra PDF into structured records.
-    Streams entries instead of building a huge list.
+    Streams entries one page at a time without loading the entire PDF into memory.
     Expected columns:
     Sr.No | Kendra Code | Name | Contact | State Name | District Name | Pin Code | Address
     """
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
+        for page in pdf.pages:   
             table = page.extract_table()
             if not table:
                 continue
 
             for row in table:
-                # Skip empty rows
                 if not row or not row[0]:
                     continue
-
-                # First column must be a number (Sr.No)
                 if not row[0].strip().isdigit():
                     continue
 
-                # Ensure row has at least 8 columns
                 while len(row) < 8:
                     row.append("")
 

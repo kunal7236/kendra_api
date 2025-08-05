@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -21,10 +21,6 @@ def sanitize_keys(obj):
         return obj
 
 def load_data(query: Dict = None) -> Dict:
-    """
-    Load Kendra data from MongoDB.
-    Returns both the data and the last updated timestamp.
-    """
     updated = meta.find_one({"_id": "kendra_update"})
     updated_at = updated["updated_at"] if updated else None
 
@@ -63,4 +59,3 @@ def save_data(entries, updated_at: str = None, batch_size: int = 500):
         {"$set": {"updated_at": updated_at}},
         upsert=True
     )
-
