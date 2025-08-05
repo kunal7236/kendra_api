@@ -39,7 +39,7 @@ def get_by_kendra_code(kendra_code: str):
 def get_status():
     data = load_data()
     return {"message": "Service is live", "updated_at": data["updated_at"]}
-
+    
 @app.post("/upload")
 async def upload(file: UploadFile = File(...), x_api_key: str = Header(...)):
     if x_api_key != API_KEY:
@@ -48,16 +48,15 @@ async def upload(file: UploadFile = File(...), x_api_key: str = Header(...)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
-    contents = await file.read()
     temp_pdf_path = f"/tmp/{datetime.now().timestamp()}_{file.filename}"
-
     with open(temp_pdf_path, "wb") as f:
-        f.write(contents)
+        while chunk := await file.read(1024 * 1024):  # 1MB chunks
+            f.write(chunk)
 
     try:
-        entries = parse_pdf(temp_pdf_path)
-        save_data(entries)
+        save_data(parse_pdf(temp_pdf_path))  
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
 
-    return {"message": "Data updated successfully", "entries": len(entries)}
+    return {"message": "Data updated successfully"}
+

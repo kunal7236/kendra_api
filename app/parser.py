@@ -1,13 +1,13 @@
 import pdfplumber
-from typing import List, Dict
+from typing import Dict, Iterator
 
-def parse_pdf(pdf_path: str) -> List[Dict]:
+def parse_pdf(pdf_path: str) -> Iterator[Dict]:
     """
     Parse Jan Aushadhi Kendra PDF into structured records.
+    Streams entries instead of building a huge list.
     Expected columns:
     Sr.No | Kendra Code | Name | Contact | State Name | District Name | Pin Code | Address
     """
-    data = []
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
             table = page.extract_table()
@@ -27,7 +27,7 @@ def parse_pdf(pdf_path: str) -> List[Dict]:
                 while len(row) < 8:
                     row.append("")
 
-                entry = {
+                yield {
                     "Sr.No": row[0].strip(),
                     "Kendra Code": row[1].strip() if row[1] else "",
                     "Name": row[2].strip() if row[2] else "",
@@ -37,6 +37,3 @@ def parse_pdf(pdf_path: str) -> List[Dict]:
                     "Pin Code": row[6].strip() if row[6] else "",
                     "Address": row[7].strip() if row[7] else ""
                 }
-                data.append(entry)
-
-    return data
