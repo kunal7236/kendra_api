@@ -9,7 +9,7 @@ def parse_pdf(pdf_path: str) -> Iterator[Dict]:
     Sr.No | Kendra Code | Name | Contact | State Name | District Name | Pin Code | Address
     """
     with pdfplumber.open(pdf_path) as pdf:
-        total_pages = pdf.page_count
+        total_pages = len(pdf.pages)
 
     for i in range(total_pages):
         with pdfplumber.open(pdf_path) as pdf:
