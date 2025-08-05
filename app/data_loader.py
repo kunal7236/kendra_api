@@ -34,7 +34,7 @@ def load_data(query: Dict = None) -> Dict:
         "results": results
     }
 
-def save_data(entries, updated_at: str = None, batch_size: int = 1000, reset: bool = False):
+def save_data(entries, updated_at: str = None, batch_size: int = 750, reset: bool = False):
     """
     Save Kendra entries into MongoDB.
     - If reset=True: clear old data and overwrite metadata timestamp.

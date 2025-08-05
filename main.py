@@ -66,7 +66,7 @@ async def upload(
         else:
             save_data(parse_pdf(temp_pdf_path),
                       reset=False,
-                      batch_size=1000)
+                      batch_size=750)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
 
